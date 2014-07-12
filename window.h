@@ -6,6 +6,10 @@
 #include <QGridLayout>
 #include <QPushButton>
 #include <QComboBox>
+#include <QToolButton>
+#include <QIcon>
+#include <QMenu>
+#include <QProcess>
 #include <iostream>
 #include <shadow.h>
 #include <dirent.h>
@@ -15,87 +19,35 @@
 #include <sys/types.h>
 #include <stdlib.h>
 
-char * session_path = "/usr/share/xsessions/";
-DIR *dir;
-struct dirent *ent;
-
 class Window : public QWidget
 {
 private:
 	QLineEdit* ufield;
 	QLineEdit* pfield;
-	QGridLayout * grid;
-	QPushButton * button;
-	QComboBox * sessions;
-	struct spwd* n;
-	void getSessions()
-	{
-		if((dir = opendir(session_path)) != NULL)
-		{
-			std::string s;
-			while((ent = readdir(dir)) != NULL)
-			{
-				s = ent->d_name;
-				std::size_t found = s.find(".desktop");
-				if(found != std::string::npos)
-					sessions->addItem(QString(s.substr(0,found).c_str()));
-			}
-			closedir(dir);
-		}
-	}
+	QGridLayout* grid;
+	QPushButton* button;
+	QComboBox* sessions;
+	QToolButton* powerops;
+	QIcon* powericon;
+	QMenu* powermenu;
+	QAction* PowerMenuActions[3];
 
-	QString getUserSession()
-	{
-		return sessions->currentText();
-	}
+	struct spwd* n;
+	const char * session_path = "/usr/share/xsessions/";
+	DIR *dir;
+	struct dirent *ent;
+
+	void getSessions();
+	QString getUserSession();
+	void suspend();
+	void restart();
+	void shutdown();
 
 protected:
-	void onLogin()
-	{
-		std::cout << "Login Button pressed.\n";
-		QString username = ufield->text();
-		if(!username.isEmpty())
-		{
-			n = getspnam(username.toStdString().c_str());
-
-			if(n != NULL)
-			{
-				std::cout << n->sp_namp << "\n";
-			}
-			else
-			{
-				std::cout << "Error, no user: " << username.toStdString() << "\n";
-			}
-		}
-		else
-		{
-			std::cout << "Error, empty username.\n";
-		}
-	}
+	void onLogin();
 
 public:
-	Window(QWidget *parent = 0) : QWidget(parent)
-	{
-		ufield = new QLineEdit(this);
-		pfield = new QLineEdit(this);
-		button = new QPushButton(this);
-		sessions = new QComboBox(this);
-
-		pfield->setEchoMode(QLineEdit::Password);
-		button->setText("Login");
-
-		connect(button, &QPushButton::clicked, this, &Window::onLogin);
-
-		grid = new QGridLayout();
-		grid->addWidget(ufield, 0, 0);
-		grid->addWidget(pfield, 1, 0);
-		grid->addWidget(sessions, 0, 1);
-		grid->addWidget(button, 1, 1);
-		getSessions();
-		setLayout(grid);
-
-	}
-
+	Window(QWidget *parent = 0);
 	~Window();
 };
 

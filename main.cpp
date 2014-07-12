@@ -1,13 +1,6 @@
 #include <QApplication>
 #include <QWidget>
-#include <QLineEdit>
-#include <QGridLayout>
-#include <QPushButton>
-#include <QComboBox>
 #include <iostream>
-#include <shadow.h>
-#include <dirent.h>
-#include <string>
 //Forking requirements
 #include <unistd.h>
 #include <sys/types.h>
@@ -29,23 +22,27 @@ int main(int argc, char** argv)
 		std::cout << "You are not running as root, this will cause problems.\n";
 	}
 
+	//startX();
+
 	QApplication app(argc, argv);
 	Window window;
-	//QWidget window;
-	//QLineEdit field = QLineEdit(&window);
-
-	//field.setEchoMode(QLineEdit::Password);
 
 	window.resize(250, 150);
 	window.setWindowTitle("My Custom DM");
+	//window.setWindowFlags(Qt::FramelessWindowHint);
 	window.setStyleSheet("background-image: url(/home/marcus/Pictures/splendor_by_mio188-d415zcq.png)");
 	//window.showFullScreen();
 	window.show();
-	//field.show();
 
 	return app.exec();
 }
 
+
+/*
+** FIXME!
+** Need to get the DM to start X before running the rest of the program.
+**
+*/
 void startX()
 {
 	pid_t pID = vfork();
