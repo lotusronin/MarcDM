@@ -18,7 +18,7 @@ CXXFLAGS      = -flto -pipe -march=x86-64 -mtune=generic -O2 -pipe -fstack-prote
 INCPATH       = -I/usr/lib/qt/mkspecs/linux-g++ -I. -I. -isystem /usr/include/qt -isystem /usr/include/qt/QtWidgets -isystem /usr/include/qt/QtGui -isystem /usr/include/qt/QtCore -I.
 LINK          = g++
 LFLAGS        = -Wl,-O1,--sort-common,--as-needed,-z,relro -Wl,-O1,-flto
-LIBS          = $(SUBLIBS) -lQt5Widgets -lQt5Gui -lQt5Core -lGL -lpthread 
+LIBS          = $(SUBLIBS) -lcrypt -lQt5Widgets -lQt5Gui -lQt5Core -lGL -lpthread 
 AR            = ar cqs
 RANLIB        = 
 QMAKE         = /usr/bin/qmake-qt5
@@ -92,6 +92,7 @@ DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		/usr/lib/qt/mkspecs/features/default_pre.prf \
 		/usr/lib/qt/mkspecs/features/resolve_config.prf \
 		/usr/lib/qt/mkspecs/features/default_post.prf \
+		/usr/lib/qt/mkspecs/features/c++11.prf \
 		/usr/lib/qt/mkspecs/features/warn_on.prf \
 		/usr/lib/qt/mkspecs/features/qt.prf \
 		/usr/lib/qt/mkspecs/features/resources.prf \
@@ -180,6 +181,7 @@ Makefile: qt\ dm.pro /usr/lib/qt/mkspecs/linux-g++/qmake.conf /usr/lib/qt/mkspec
 		/usr/lib/qt/mkspecs/features/default_pre.prf \
 		/usr/lib/qt/mkspecs/features/resolve_config.prf \
 		/usr/lib/qt/mkspecs/features/default_post.prf \
+		/usr/lib/qt/mkspecs/features/c++11.prf \
 		/usr/lib/qt/mkspecs/features/warn_on.prf \
 		/usr/lib/qt/mkspecs/features/qt.prf \
 		/usr/lib/qt/mkspecs/features/resources.prf \
@@ -239,6 +241,7 @@ Makefile: qt\ dm.pro /usr/lib/qt/mkspecs/linux-g++/qmake.conf /usr/lib/qt/mkspec
 /usr/lib/qt/mkspecs/features/default_pre.prf:
 /usr/lib/qt/mkspecs/features/resolve_config.prf:
 /usr/lib/qt/mkspecs/features/default_post.prf:
+/usr/lib/qt/mkspecs/features/c++11.prf:
 /usr/lib/qt/mkspecs/features/warn_on.prf:
 /usr/lib/qt/mkspecs/features/qt.prf:
 /usr/lib/qt/mkspecs/features/resources.prf:

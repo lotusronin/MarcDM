@@ -9,3 +9,5 @@ INCLUDEPATH += .
 # Input
 SOURCES += main.cpp window.cpp
 QT += widgets
+CONFIG += c++11
+LIBS += -lcrypt

@@ -1,4 +1,6 @@
 #include "window.h"
+#include <iostream>
+#include <fstream>
 
 Window::Window(QWidget *parent) : QWidget(parent)
 {
@@ -69,25 +71,146 @@ void Window::onLogin()
 	/* FIXME!
 	** Get Better User Authentication and add Password Auth. too.
 	*/
-	std::cout << "Login Button pressed.\n";
+	int auth = 0;
+	//std::cout << "Login Button pressed.\n";
 	QString username = ufield->text();
+	QString pass = pfield->text();
 	if(!username.isEmpty())
 	{
 		n = getspnam(username.toStdString().c_str());
 
+		/*
+		**	User Authentication
+		*/
 		if(n != NULL)
 		{
-			std::cout << n->sp_namp << "\n";
+			//std::cout << n->sp_namp << "\n";
+			auth = 1;
 		}
 		else
 		{
+			endspent ();		/* stop access to shadow passwd file */
 			std::cout << "Error, no user: " << username.toStdString() << "\n";
 		}
+
+		/*
+		**	Password Authentication
+		*/
+		if(!pass.isEmpty() && auth == 1 && n != NULL)
+		{
+			std::string spass = n->sp_pwdp;
+			std::string encpass = pw_encrypt(pass.toStdString().c_str(), spass.c_str());
+			if(encpass.compare(spass) == 0)
+			{
+				std::cout << "Username authenticated\n";
+				std::cout << "Password authenticated\n";
+				auth++;
+			}
+			else
+			{
+				std::cout << "Login failed!\n";
+			}
+		}
+		else
+		{
+			endspent ();		/* stop access to shadow passwd file */
+			if(pass.isEmpty())
+				std::cout << "Error, empty password.\n";
+		}
+
+		
 	}
 	else
 	{
 		std::cout << "Error, empty username.\n";
 	}
+	/*
+	** FIXME!
+	** Make sure all of this is correct.
+	**
+	*/
+
+	//void login(std::string name, std::string shell, std::string home)
+	if(auth == 2)
+	{
+
+		std::string name = username.toStdString();
+		pwd = getpwnam(name.c_str());
+
+		std::string shell = pwd->pw_shell;
+		std::string home = pwd->pw_dir;
+
+		pid_t pID = vfork();
+		//int pID = 0;
+		if(pID == 0)
+		{
+			/* Have child set environment vars, change g/uid and run session.
+			*/
+			int res = 0;
+			res = setenv("USER",name.c_str(),1);
+			//std::cout << res << "\n";
+			res = setenv("LOGNAME",name.c_str(),1);
+			//std::cout << res << "\n";
+			res = setenv("SHELL",shell.c_str(),1);
+			//std::cout << res << "\n";
+			res = setenv("HOME",home.c_str(),1);
+			/*std::cout << res << "\n";
+			std::cout << getenv("HOME") << "\n";*/
+			std::cout << "Logged in!\n";
+			std::cout << "User: " << name << "\nHome: " << home << "\nShell: " << shell << "\n";
+			std::cout << "Setting guid and uid!\n";
+			std::string cmnd = readySession();
+			cleanup();
+			if(setgid(pwd->pw_gid) || setuid(pwd->pw_uid))
+			{	
+				std::cout << "Error switching g/uids\n";
+				exit(1);
+			}
+			startSession(cmnd);
+			//exit(0);
+		}
+	}
+}
+
+std::string Window::readySession()
+{
+	std::string fpath = session_path + sessions->currentText().toStdString() + ".desktop";
+	std::string line;
+	std::ifstream file;
+	
+	file.open(fpath);
+	while(line.compare(0,5,"Exec=") != 0)
+	{
+		getline(file,line);
+	}
+	std::string cmnd = line.substr(5,line.length());
+	return cmnd;
+}
+
+void Window::startSession(std::string cmnd)
+{
+	/*std::string session = sessions->currentText().toStdString();
+	//std::cout << "Session is: " << session << "\n";
+
+	std::string fpath = session_path + session + ".desktop";
+	std::string line;
+	//std::cout << f << "\n";
+	std::ifstream file;
+	file.open(fpath);
+	while(line.compare(0,5,"Exec=") != 0)
+	{
+		getline(file,line);
+	}
+	std::string cmnd = line.substr(5,line.length());*/
+
+	/*
+	**	Start X session here!
+	*/
+	std::cout << "Starting xsession: " << cmnd << "\n";
+	char* s; 
+	cmnd.copy(s, cmnd.length(), 0);
+	char* args[] = {s, (char*)0};
+	execvp(s, args);
 }
 
 void Window::suspend()
@@ -100,16 +223,48 @@ void Window::suspend()
 
 void Window::restart()
 {
-	char* null = NULL;
+	/*char* null = NULL;
 	char *s[] = {"systemctl", "reboot", null};
-	execvp("systemctl", s);
+	execvp("systemctl", s);*/
+	QProcess* p = new QProcess(this);
+	p->start("systemctl reboot");
 	exit(0);
 }
 
 void Window::shutdown()
 {
-	char* null = NULL;
+	/*char* null = NULL;
 	char *s[] = {"systemctl", "poweroff", null};
-	execvp("systemctl", s);
+	execvp("systemctl", s);*/
+	QProcess* p = new QProcess(this);
+	p->start("systemctl poweroff");
 	exit(0);
+}
+
+void Window::cleanup()
+{
+	endpwent ();		/* stop access to password file */
+	endspent ();		/* stop access to shadow passwd file */
+}
+
+char *pw_encrypt (const char *clear, const char *salt)
+{
+	static char cipher[128];
+	char *cp;
+
+	cp = crypt (clear, salt);
+	if (!cp) {
+		/*
+		 * Single Unix Spec: crypt() may return a null pointer,
+		 * and set errno to indicate an error.  The caller doesn't
+		 * expect us to return NULL, so...
+		 */
+		perror ("crypt");
+		exit (1);
+	}
+	if (strlen (cp) != 13)
+		return cp;	/* nonstandard crypt() in libc, better bail out */
+	strcpy (cipher, cp);
+
+	return cipher;
 }
