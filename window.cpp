@@ -169,6 +169,7 @@ void Window::onLogin()
 			startSession(cmnd);
 			//exit(0);
 		}
+		this->window()->hide();
 	}
 }
 
@@ -210,7 +211,9 @@ void Window::startSession(std::string cmnd)
 	char* s; 
 	cmnd.copy(s, cmnd.length(), 0);
 	char* args[] = {s, (char*)0};
+	//char* args[] = {"startlxqt", NULL};
 	execvp(s, args);
+	std::cerr << "There Was a BIG error...\n";
 }
 
 void Window::suspend()

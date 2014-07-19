@@ -14,10 +14,10 @@ CC            = gcc
 CXX           = g++
 DEFINES       = -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong --param=ssp-buffer-size=4 -Wall -W -D_REENTRANT -fPIE $(DEFINES)
-CXXFLAGS      = -flto -pipe -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong --param=ssp-buffer-size=4 -Wall -W -D_REENTRANT -fPIE $(DEFINES) -std=c++11
+CXXFLAGS      = -pipe -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong --param=ssp-buffer-size=4 -std=c++0x -Wall -W -D_REENTRANT -fPIE $(DEFINES)
 INCPATH       = -I/usr/lib/qt/mkspecs/linux-g++ -I. -I. -isystem /usr/include/qt -isystem /usr/include/qt/QtWidgets -isystem /usr/include/qt/QtGui -isystem /usr/include/qt/QtCore -I.
 LINK          = g++
-LFLAGS        = -Wl,-O1,--sort-common,--as-needed,-z,relro -Wl,-O1,-flto
+LFLAGS        = -Wl,-O1,--sort-common,--as-needed,-z,relro -Wl,-O1
 LIBS          = $(SUBLIBS) -lcrypt -lQt5Widgets -lQt5Gui -lQt5Core -lGL -lpthread 
 AR            = ar cqs
 RANLIB        = 
@@ -46,9 +46,11 @@ OBJECTS_DIR   = ./
 ####### Files
 
 SOURCES       = main.cpp \
-		window.cpp 
+		window.cpp \
+		server.cpp 
 OBJECTS       = main.o \
-		window.o
+		window.o \
+		server.o
 DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		/usr/lib/qt/mkspecs/common/shell-unix.conf \
 		/usr/lib/qt/mkspecs/common/unix.conf \
@@ -105,7 +107,8 @@ DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		/usr/lib/qt/mkspecs/features/yacc.prf \
 		/usr/lib/qt/mkspecs/features/lex.prf \
 		qt dm.pro main.cpp \
-		window.cpp
+		window.cpp \
+		server.cpp
 QMAKE_TARGET  = qt\ dm
 DESTDIR       = #avoid trailing-slash linebreak
 TARGET        = qt\ dm
@@ -264,7 +267,7 @@ qmake_all: FORCE
 
 dist: 
 	@test -d .tmp/qt\ dm1.0.0 || mkdir -p .tmp/qt\ dm1.0.0
-	$(COPY_FILE) --parents $(DIST) .tmp/qt\ dm1.0.0/ && $(COPY_FILE) --parents main.cpp window.cpp .tmp/qt\ dm1.0.0/ && (cd `dirname .tmp/qt\ dm1.0.0` && $(TAR) qt\ dm1.0.0.tar qt\ dm1.0.0 && $(COMPRESS) qt\ dm1.0.0.tar) && $(MOVE) `dirname .tmp/qt\ dm1.0.0`/qt\ dm1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/qt\ dm1.0.0
+	$(COPY_FILE) --parents $(DIST) .tmp/qt\ dm1.0.0/ && $(COPY_FILE) --parents main.cpp window.cpp server.cpp .tmp/qt\ dm1.0.0/ && (cd `dirname .tmp/qt\ dm1.0.0` && $(TAR) qt\ dm1.0.0.tar qt\ dm1.0.0 && $(COMPRESS) qt\ dm1.0.0.tar) && $(MOVE) `dirname .tmp/qt\ dm1.0.0`/qt\ dm1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/qt\ dm1.0.0
 
 
 clean:compiler_clean 
@@ -303,11 +306,15 @@ compiler_clean:
 
 ####### Compile
 
-main.o: main.cpp window.h
+main.o: main.cpp window.h \
+		server.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 window.o: window.cpp window.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o window.o window.cpp
+
+server.o: server.cpp server.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o server.o server.cpp
 
 ####### Install
 

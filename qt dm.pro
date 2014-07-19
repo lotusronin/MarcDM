@@ -7,7 +7,7 @@ TARGET = "qt dm"
 INCLUDEPATH += .
 
 # Input
-SOURCES += main.cpp window.cpp
+SOURCES += main.cpp window.cpp server.cpp
 QT += widgets
 CONFIG += c++11
 LIBS += -lcrypt
