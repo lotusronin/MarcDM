@@ -166,10 +166,11 @@ void Window::onLogin()
 				std::cout << "Error switching g/uids\n";
 				exit(1);
 			}
+			chdir(home.c_str());
 			startSession(cmnd);
 			//exit(0);
 		}
-		this->window()->hide();
+		//this->window()->hide();
 	}
 }
 
