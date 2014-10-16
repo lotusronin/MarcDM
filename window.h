@@ -10,6 +10,7 @@
 #include <QIcon>
 #include <QMenu>
 #include <QProcess>
+#include <QFrame>
 #include <iostream>
 #include <shadow.h>
 #include <dirent.h>
@@ -20,6 +21,7 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <crypt.h>
+#include <sys/wait.h>
 
 char *pw_encrypt (const char *clear, const char *salt);
 
@@ -35,6 +37,7 @@ private:
 	QIcon* powericon;
 	QMenu* powermenu;
 	QAction* PowerMenuActions[3];
+	QFrame* frame;
 
 	struct spwd* n;
 	struct passwd* pwd;
@@ -50,13 +53,13 @@ private:
 	void restart();
 	void shutdown();
 	void cleanup();
-
 protected:
 	void onLogin();
 
 public:
 	Window(QWidget *parent = 0);
 	~Window();
+	void update();
 };
 
 #endif //WINDOW_H

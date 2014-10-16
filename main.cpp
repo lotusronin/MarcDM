@@ -39,6 +39,7 @@ int main(int argc, char** argv)
 	//window.resize(dwidth, dheight);
 	//window.setWindowTitle("My Custom DM");
 	window.setWindowFlags(Qt::FramelessWindowHint);
+	window.update();
 	//window.setStyleSheet("background-image: url(/home/marcus/Pictures/splendor_by_mio188-d415zcq.png)");
 	//window.showFullScreen();
 	window.show();

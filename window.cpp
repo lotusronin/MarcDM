@@ -4,11 +4,12 @@
 
 Window::Window(QWidget *parent) : QWidget(parent)
 {
-	ufield = new QLineEdit(this);
-	pfield = new QLineEdit(this);
-	button = new QPushButton(this);
-	sessions = new QComboBox(this);
-	powerops = new QToolButton(this);
+	frame = new QFrame(this);
+	ufield = new QLineEdit(frame);
+	pfield = new QLineEdit(frame);
+	button = new QPushButton(frame);
+	sessions = new QComboBox(frame);
+	powerops = new QToolButton(frame);
 	powericon = new QIcon("/usr/share/icons/gnome/32x32/actions/system-shutdown.png");
 	powermenu = new QMenu();
 	PowerMenuActions[0] = new QAction("Suspend", this);
@@ -36,11 +37,23 @@ Window::Window(QWidget *parent) : QWidget(parent)
 	grid->addWidget(button, 1, 1);
 	grid->addWidget(powerops, 2, 1);
 	getSessions();
-	setLayout(grid);
+	frame->setLayout(grid);
 }
 
 Window::~Window()
 {}
+
+void Window::update()
+{
+	QPoint temp = this->geometry().center();
+	QSize temp2 = frame->size();
+	std::cout << temp2.height() << " " << temp2.width() << "\n";
+	std::cout << temp.x() << " " << temp.y() << "\n";
+	temp.setX(temp.rx()-temp2.width());
+	temp.setY(temp.ry()-temp2.height());
+	std::cout << temp.x() << " " << temp.y() << "\n";
+	frame->move(temp);	
+}
 
 void Window::getSessions()
 {
@@ -156,6 +169,7 @@ void Window::onLogin()
 			res = setenv("HOME",home.c_str(),1);
 			/*std::cout << res << "\n";
 			std::cout << getenv("HOME") << "\n";*/
+			res = setenv("XAUTHORITY",(home+"/.Xauthoirty").c_str(),1);
 			std::cout << "Logged in!\n";
 			std::cout << "User: " << name << "\nHome: " << home << "\nShell: " << shell << "\n";
 			std::cout << "Setting guid and uid!\n";
@@ -170,7 +184,12 @@ void Window::onLogin()
 			startSession(cmnd);
 			//exit(0);
 		}
-		//this->window()->hide();
+		this->window()->hide();
+		
+		// This code should be in an onLogout() method
+		int status;
+		waitpid(pID, &status, 0);
+		this->window()->show();
 	}
 }
 
@@ -209,10 +228,15 @@ void Window::startSession(std::string cmnd)
 	**	Start X session here!
 	*/
 	std::cout << "Starting xsession: " << cmnd << "\n";
-	char* s; 
+	char s[cmnd.length()+1]; 
+	std::cout << "Made a char* s\n";
 	cmnd.copy(s, cmnd.length(), 0);
+	s[cmnd.length()] = NULL; 
+	std::cout << "Copied " << cmnd << " to s\n";
 	char* args[] = {s, (char*)0};
+	std::cout << "made a list of arguements\n";
 	//char* args[] = {"startlxqt", NULL};
+	std::cout << "Beginning process now...\n";
 	execvp(s, args);
 	std::cerr << "There Was a BIG error...\n";
 }
