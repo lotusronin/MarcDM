@@ -1,6 +1,8 @@
 #include "window.h"
+#include "session.h"
 #include <iostream>
 #include <fstream>
+#include <QProcessEnvironment>
 
 Window::Window(QWidget *parent) : QWidget(parent)
 {
@@ -38,10 +40,14 @@ Window::Window(QWidget *parent) : QWidget(parent)
 	grid->addWidget(powerops, 2, 1);
 	getSessions();
 	frame->setLayout(grid);
+
+	de = new Session();
 }
 
 Window::~Window()
-{}
+{
+	delete de;
+}
 
 void Window::update()
 {
@@ -60,6 +66,7 @@ void Window::getSessions()
 	if((dir = opendir(session_path)) != NULL)
 		{
 			std::string s;
+			QStringList list;
 			while((ent = readdir(dir)) != NULL)
 			{
 				/* FIXME!
@@ -68,8 +75,11 @@ void Window::getSessions()
 				s = ent->d_name;
 				std::size_t found = s.find(".desktop");
 				if(found != std::string::npos)
-					sessions->addItem(QString(s.substr(0,found).c_str()));
+					list << s.substr(0,found).c_str();
+					//sessions->addItem(QString(s.substr(0,found).c_str()));
 			}
+			list.sort();
+			sessions->addItems(list);
 			closedir(dir);
 		}
 }
@@ -85,7 +95,6 @@ void Window::onLogin()
 	** Get Better User Authentication and add Password Auth. too.
 	*/
 	int auth = 0;
-	//std::cout << "Login Button pressed.\n";
 	QString username = ufield->text();
 	QString pass = pfield->text();
 	if(!username.isEmpty())
@@ -152,13 +161,24 @@ void Window::onLogin()
 
 		std::string shell = pwd->pw_shell;
 		std::string home = pwd->pw_dir;
-
-		pid_t pID = vfork();
+		
+		QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+		env.insert("USER",name.c_str());
+		env.insert("LOGNAME",name.c_str());
+		env.insert("SHELL",shell.c_str());
+		env.insert("HOME",home.c_str());
+		env.insert("XAUTHORITY",(home+"/.Xauthoirty").c_str());
+		de->setID(pwd->pw_uid, pwd->pw_gid);
+		de->setProcessEnvironment(env);
+		cleanup();
+		startSession(readySession());
+		pid_t pID = de->processId();
+		/*pid_t pID = vfork();
 		//int pID = 0;
 		if(pID == 0)
 		{
 			/* Have child set environment vars, change g/uid and run session.
-			*/
+			*//*
 			int res = 0;
 			res = setenv("USER",name.c_str(),1);
 			//std::cout << res << "\n";
@@ -168,7 +188,7 @@ void Window::onLogin()
 			//std::cout << res << "\n";
 			res = setenv("HOME",home.c_str(),1);
 			/*std::cout << res << "\n";
-			std::cout << getenv("HOME") << "\n";*/
+			std::cout << getenv("HOME") << "\n";*//*
 			res = setenv("XAUTHORITY",(home+"/.Xauthoirty").c_str(),1);
 			std::cout << "Logged in!\n";
 			std::cout << "User: " << name << "\nHome: " << home << "\nShell: " << shell << "\n";
@@ -183,13 +203,13 @@ void Window::onLogin()
 			chdir(home.c_str());
 			startSession(cmnd);
 			//exit(0);
-		}
-		this->window()->hide();
-		
+		}*/
+		//this->window()->hide();
+		this->hide();
 		// This code should be in an onLogout() method
 		int status;
 		waitpid(pID, &status, 0);
-		this->window()->show();
+		this->show();
 	}
 }
 
@@ -210,23 +230,14 @@ std::string Window::readySession()
 
 void Window::startSession(std::string cmnd)
 {
-	/*std::string session = sessions->currentText().toStdString();
-	//std::cout << "Session is: " << session << "\n";
-
-	std::string fpath = session_path + session + ".desktop";
-	std::string line;
-	//std::cout << f << "\n";
-	std::ifstream file;
-	file.open(fpath);
-	while(line.compare(0,5,"Exec=") != 0)
-	{
-		getline(file,line);
-	}
-	std::string cmnd = line.substr(5,line.length());*/
-
 	/*
 	**	Start X session here!
 	*/
+	QString program = QString::fromStdString(cmnd);
+	de->start(program);
+	//de->waitForFinished(-1);
+	//this->hide();
+	/*
 	std::cout << "Starting xsession: " << cmnd << "\n";
 	char s[cmnd.length()+1]; 
 	std::cout << "Made a char* s\n";
@@ -238,7 +249,7 @@ void Window::startSession(std::string cmnd)
 	//char* args[] = {"startlxqt", NULL};
 	std::cout << "Beginning process now...\n";
 	execvp(s, args);
-	std::cerr << "There Was a BIG error...\n";
+	std::cerr << "There Was a BIG error...\n";*/
 }
 
 void Window::suspend()

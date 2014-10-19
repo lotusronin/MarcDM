@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <crypt.h>
 #include <sys/wait.h>
+#include "session.h"
 
 char *pw_encrypt (const char *clear, const char *salt);
 
@@ -38,6 +39,7 @@ private:
 	QMenu* powermenu;
 	QAction* PowerMenuActions[3];
 	QFrame* frame;
+	Session* de;
 
 	struct spwd* n;
 	struct passwd* pwd;

@@ -3,11 +3,11 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = "qt dm"
+TARGET = "marcdm"
 INCLUDEPATH += .
 
 # Input
-SOURCES += main.cpp window.cpp server.cpp
+SOURCES += main.cpp window.cpp server.cpp session.cpp
 QT += widgets
 CONFIG += c++11
-LIBS += -lcrypt
+LIBS += -lcrypt -lxcb
