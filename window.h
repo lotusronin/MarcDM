@@ -51,6 +51,7 @@ private:
 	const char * session_path = "/usr/share/xsessions/";
 	DIR *dir;
 	struct dirent *ent;
+	bool hdpi;
 
 	void getSessions();
 	std::string readySession();
@@ -65,6 +66,7 @@ protected:
 
 public:
 	Window(QWidget *parent = 0);
+	void isHiDPI(bool hidpi);
 	~Window();
 	void update();
 };

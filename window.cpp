@@ -8,6 +8,7 @@
 
 Window::Window(QWidget *parent) : QWidget(parent)
 {
+	hdpi = false;
 	settings = new Settings();
 	settings->load();
 	bkg = new QLabel(this);
@@ -60,6 +61,27 @@ Window::~Window()
 
 void Window::update()
 {
+	/* HiDPI
+	** This is a hack to make the widgets be better
+	** visibile on hidpi screens. When/if Qt5 gets
+	** native support for hidpi, we should swap to
+	** that.
+	*/
+	int mult = 1;
+	if(hdpi) {
+		mult = 2;
+	}
+	frame->setMinimumSize(frame->size()*mult);
+	ufield->setMinimumSize(ufield->size()*mult);
+	pfield->setMinimumSize(pfield->size()*mult);
+	button->setMinimumSize(button->size()*mult);
+	sessions->setMinimumSize(sessions->size()*mult);
+	powerops->setMinimumSize(powerops->size()*mult);
+	powermenu->setMinimumSize(powermenu->size()*mult);
+	/*
+	** End hidpi hackery
+	*/
+
 	QPoint temp = this->geometry().center();
 	QSize temp2 = frame->size();
 	std::cout << temp2.height() << " " << temp2.width() << "\n";
@@ -71,9 +93,12 @@ void Window::update()
 	settings->load();
 	QString bkgpath = settings->getValue("background");
 	//grid->addWidget(new QLabel(bkgpath),2,0);
-	bkg->setScaledContents(true);
-	bkg->setPixmap(QPixmap::fromImage(QImage(bkgpath)).scaled(this->width(),this->height()));
-	frame->setAutoFillBackground(true);
+	if(!bkgpath.isNull() && !bkgpath.isEmpty())	{
+		bkg->setScaledContents(true);
+		bkg->setPixmap(QPixmap::fromImage(QImage(bkgpath)).scaled(this->width(),this->height()));
+		frame->setAutoFillBackground(true);
+	}
+	ufield->setFocus();
 	settings->close();
 }
 
@@ -277,4 +302,8 @@ char *pw_encrypt (const char *clear, const char *salt)
 	strcpy (cipher, cp);
 
 	return cipher;
+}
+
+void Window::isHiDPI(bool hidpi) {
+	hdpi = hidpi;
 }

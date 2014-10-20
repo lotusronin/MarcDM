@@ -10,6 +10,7 @@
 
 #include "window.h"
 #include "server.h"
+#include <QFont>
 
 Server server;
 void startX();
@@ -32,7 +33,18 @@ int main(int argc, char** argv)
 	}
 
 	QApplication app(argc, argv);
+	double ppi = app.primaryScreen()->physicalDotsPerInch();
+	std::cout << "Your ppi is " << ppi << "\n";
 	Window window;
+	if(ppi >= 200.00) {
+		/* HiDPI
+		** some hidpi font setting hack
+		*/
+		window.isHiDPI(true);
+		QFont font = app.font();
+		font.setPointSize(font.pointSize()*2);
+		app.setFont(font);
+	}
 	window.resize(app.primaryScreen()->size());
 	window.setWindowFlags(Qt::FramelessWindowHint);
 	window.update();
