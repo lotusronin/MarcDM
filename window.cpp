@@ -38,6 +38,8 @@ Window::Window(QWidget *parent) : QWidget(parent)
 	connect(PowerMenuActions[1], &QAction::triggered, this, &Window::restart);
 	connect(PowerMenuActions[2], &QAction::triggered, this, &Window::shutdown);
 
+	connect(pfield, &QLineEdit::returnPressed, this, &Window::onLogin);
+
 	grid = new QGridLayout();
 	grid->addWidget(ufield, 0, 0);
 	grid->addWidget(pfield, 1, 0);
