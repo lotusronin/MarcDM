@@ -11,6 +11,7 @@
 #include <QMenu>
 #include <QProcess>
 #include <QFrame>
+#include <QLabel>
 #include <iostream>
 #include <shadow.h>
 #include <dirent.h>
@@ -23,6 +24,7 @@
 #include <crypt.h>
 #include <sys/wait.h>
 #include "session.h"
+#include "settings.h"
 
 char *pw_encrypt (const char *clear, const char *salt);
 
@@ -39,7 +41,10 @@ private:
 	QMenu* powermenu;
 	QAction* PowerMenuActions[3];
 	QFrame* frame;
+	QLabel* bkg;
 	Session* de;
+	Settings* settings;
+	QString defSession;
 
 	struct spwd* n;
 	struct passwd* pwd;

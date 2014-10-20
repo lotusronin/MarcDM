@@ -27,15 +27,6 @@ void Server::startX()
 	QStringList args;
 	args << ":0" << "-background" << "none" << "-noreset" << "-verbose" << "3" << "-logfile" << "/dev/null" << "-seat" << "seat0" << "-nolisten" << "tcp" << "vt1" << "-novtswitch";
 	xproc->start("Xorg",args);
-	
-	/*pid_t pID = vfork();
-	if(pID == 0)
-	{
-		char* xexec[] = {"Xorg",":0","-background","none","-noreset","-verbose","3","-logfile","/dev/null","-seat","seat0","-nolisten","tcp","vt1", "-novtswitch", NULL};
-		execvp("Xorg", xexec);
-		std::cout << "Error starting X!!!!\n";
-		exit(0);
-	}*/
 	setenv("DISPLAY",":0",1);
 }
 

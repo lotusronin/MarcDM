@@ -33,14 +33,9 @@ int main(int argc, char** argv)
 
 	QApplication app(argc, argv);
 	Window window;
-
 	window.resize(app.primaryScreen()->size());
-	//window.resize(dwidth, dheight);
-	//window.setWindowTitle("My Custom DM");
 	window.setWindowFlags(Qt::FramelessWindowHint);
 	window.update();
-	//window.setStyleSheet("background-image: url(/home/marcus/Pictures/splendor_by_mio188-d415zcq.png)");
-	//window.showFullScreen();
 	window.show();
 
 	return app.exec();

@@ -3,10 +3,16 @@
 #include <iostream>
 #include <fstream>
 #include <QProcessEnvironment>
+#include <QPixmap>
+#include <QImage>
 
 Window::Window(QWidget *parent) : QWidget(parent)
 {
+	settings = new Settings();
+	settings->load();
+	bkg = new QLabel(this);
 	frame = new QFrame(this);
+	frame->setFrameStyle(QFrame::StyledPanel);
 	ufield = new QLineEdit(frame);
 	pfield = new QLineEdit(frame);
 	button = new QPushButton(frame);
@@ -42,6 +48,7 @@ Window::Window(QWidget *parent) : QWidget(parent)
 	frame->setLayout(grid);
 
 	de = new Session();
+	settings->close();
 }
 
 Window::~Window()
@@ -58,11 +65,19 @@ void Window::update()
 	temp.setX(temp.rx()-temp2.width());
 	temp.setY(temp.ry()-temp2.height());
 	std::cout << temp.x() << " " << temp.y() << "\n";
-	frame->move(temp);	
+	frame->move(temp);
+	settings->load();
+	QString bkgpath = settings->getValue("background");
+	//grid->addWidget(new QLabel(bkgpath),2,0);
+	bkg->setScaledContents(true);
+	bkg->setPixmap(QPixmap::fromImage(QImage(bkgpath)).scaled(this->width(),this->height()));
+	frame->setAutoFillBackground(true);
+	settings->close();
 }
 
 void Window::getSessions()
 {
+	QString def = settings->getValue("default_session");
 	if((dir = opendir(session_path)) != NULL)
 		{
 			std::string s;
@@ -70,15 +85,18 @@ void Window::getSessions()
 			while((ent = readdir(dir)) != NULL)
 			{
 				/* FIXME!
-				** Add the Sessions in alphabetical order. Also make sure the executables exist.
+				** Make sure the executables exist.
 				*/
 				s = ent->d_name;
 				std::size_t found = s.find(".desktop");
 				if(found != std::string::npos)
 					list << s.substr(0,found).c_str();
-					//sessions->addItem(QString(s.substr(0,found).c_str()));
 			}
 			list.sort();
+			if(!def.isNull()) {
+				defSession = def;
+				list.prepend(QString("default"));
+			}
 			sessions->addItems(list);
 			closedir(dir);
 		}
@@ -152,7 +170,6 @@ void Window::onLogin()
 	**
 	*/
 
-	//void login(std::string name, std::string shell, std::string home)
 	if(auth == 2)
 	{
 
@@ -173,38 +190,6 @@ void Window::onLogin()
 		cleanup();
 		startSession(readySession());
 		pid_t pID = de->processId();
-		/*pid_t pID = vfork();
-		//int pID = 0;
-		if(pID == 0)
-		{
-			/* Have child set environment vars, change g/uid and run session.
-			*//*
-			int res = 0;
-			res = setenv("USER",name.c_str(),1);
-			//std::cout << res << "\n";
-			res = setenv("LOGNAME",name.c_str(),1);
-			//std::cout << res << "\n";
-			res = setenv("SHELL",shell.c_str(),1);
-			//std::cout << res << "\n";
-			res = setenv("HOME",home.c_str(),1);
-			/*std::cout << res << "\n";
-			std::cout << getenv("HOME") << "\n";*//*
-			res = setenv("XAUTHORITY",(home+"/.Xauthoirty").c_str(),1);
-			std::cout << "Logged in!\n";
-			std::cout << "User: " << name << "\nHome: " << home << "\nShell: " << shell << "\n";
-			std::cout << "Setting guid and uid!\n";
-			std::string cmnd = readySession();
-			cleanup();
-			if(setgid(pwd->pw_gid) || setuid(pwd->pw_uid))
-			{	
-				std::cout << "Error switching g/uids\n";
-				exit(1);
-			}
-			chdir(home.c_str());
-			startSession(cmnd);
-			//exit(0);
-		}*/
-		//this->window()->hide();
 		this->hide();
 		// This code should be in an onLogout() method
 		int status;
@@ -215,7 +200,14 @@ void Window::onLogin()
 
 std::string Window::readySession()
 {
-	std::string fpath = session_path + sessions->currentText().toStdString() + ".desktop";
+	std::string fpath;
+	if(sessions->currentText().toStdString().compare("default") == 0)
+	{
+		fpath = session_path + defSession.toStdString()+".desktop";
+	}
+	else {
+		fpath = session_path + sessions->currentText().toStdString() + ".desktop";
+	}
 	std::string line;
 	std::ifstream file;
 	
@@ -235,36 +227,16 @@ void Window::startSession(std::string cmnd)
 	*/
 	QString program = QString::fromStdString(cmnd);
 	de->start(program);
-	//de->waitForFinished(-1);
-	//this->hide();
-	/*
-	std::cout << "Starting xsession: " << cmnd << "\n";
-	char s[cmnd.length()+1]; 
-	std::cout << "Made a char* s\n";
-	cmnd.copy(s, cmnd.length(), 0);
-	s[cmnd.length()] = NULL; 
-	std::cout << "Copied " << cmnd << " to s\n";
-	char* args[] = {s, (char*)0};
-	std::cout << "made a list of arguements\n";
-	//char* args[] = {"startlxqt", NULL};
-	std::cout << "Beginning process now...\n";
-	execvp(s, args);
-	std::cerr << "There Was a BIG error...\n";*/
 }
 
 void Window::suspend()
 {
-	/*char *s[] = {"systemctl", "suspend", (char *) 0};
-	execvp("systemctl", s);*/
 	QProcess* p = new QProcess(this);
 	p->start("systemctl suspend");
 }
 
 void Window::restart()
 {
-	/*char* null = NULL;
-	char *s[] = {"systemctl", "reboot", null};
-	execvp("systemctl", s);*/
 	QProcess* p = new QProcess(this);
 	p->start("systemctl reboot");
 	exit(0);
@@ -272,9 +244,6 @@ void Window::restart()
 
 void Window::shutdown()
 {
-	/*char* null = NULL;
-	char *s[] = {"systemctl", "poweroff", null};
-	execvp("systemctl", s);*/
 	QProcess* p = new QProcess(this);
 	p->start("systemctl poweroff");
 	exit(0);

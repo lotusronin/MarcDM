@@ -7,7 +7,7 @@ TARGET = "marcdm"
 INCLUDEPATH += .
 
 # Input
-SOURCES += main.cpp window.cpp server.cpp session.cpp
+SOURCES += main.cpp window.cpp server.cpp session.cpp settings.cpp
 QT += widgets
 CONFIG += c++11
 LIBS += -lcrypt -lxcb

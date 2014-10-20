@@ -48,11 +48,13 @@ OBJECTS_DIR   = ./
 SOURCES       = main.cpp \
 		window.cpp \
 		server.cpp \
-		session.cpp 
+		session.cpp \
+		settings.cpp 
 OBJECTS       = main.o \
 		window.o \
 		server.o \
-		session.o
+		session.o \
+		settings.o
 DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		/usr/lib/qt/mkspecs/common/shell-unix.conf \
 		/usr/lib/qt/mkspecs/common/unix.conf \
@@ -111,7 +113,8 @@ DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		marcdm.pro main.cpp \
 		window.cpp \
 		server.cpp \
-		session.cpp
+		session.cpp \
+		settings.cpp
 QMAKE_TARGET  = marcdm
 DESTDIR       = #avoid trailing-slash linebreak
 TARGET        = marcdm
@@ -270,7 +273,7 @@ qmake_all: FORCE
 
 dist: 
 	@test -d .tmp/marcdm1.0.0 || mkdir -p .tmp/marcdm1.0.0
-	$(COPY_FILE) --parents $(DIST) .tmp/marcdm1.0.0/ && $(COPY_FILE) --parents main.cpp window.cpp server.cpp session.cpp .tmp/marcdm1.0.0/ && (cd `dirname .tmp/marcdm1.0.0` && $(TAR) marcdm1.0.0.tar marcdm1.0.0 && $(COMPRESS) marcdm1.0.0.tar) && $(MOVE) `dirname .tmp/marcdm1.0.0`/marcdm1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/marcdm1.0.0
+	$(COPY_FILE) --parents $(DIST) .tmp/marcdm1.0.0/ && $(COPY_FILE) --parents main.cpp window.cpp server.cpp session.cpp settings.cpp .tmp/marcdm1.0.0/ && (cd `dirname .tmp/marcdm1.0.0` && $(TAR) marcdm1.0.0.tar marcdm1.0.0 && $(COMPRESS) marcdm1.0.0.tar) && $(MOVE) `dirname .tmp/marcdm1.0.0`/marcdm1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/marcdm1.0.0
 
 
 clean:compiler_clean 
@@ -311,11 +314,13 @@ compiler_clean:
 
 main.o: main.cpp window.h \
 		session.h \
+		settings.h \
 		server.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 window.o: window.cpp window.h \
-		session.h
+		session.h \
+		settings.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o window.o window.cpp
 
 server.o: server.cpp server.h
@@ -323,6 +328,9 @@ server.o: server.cpp server.h
 
 session.o: session.cpp session.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o session.o session.cpp
+
+settings.o: settings.cpp settings.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o settings.o settings.cpp
 
 ####### Install
 
