@@ -18,7 +18,7 @@ CXXFLAGS      = -pipe -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-s
 INCPATH       = -I/usr/lib/qt/mkspecs/linux-g++ -I. -I. -isystem /usr/include/qt -isystem /usr/include/qt/QtWidgets -isystem /usr/include/qt/QtGui -isystem /usr/include/qt/QtCore -I.
 LINK          = g++
 LFLAGS        = -Wl,-O1,--sort-common,--as-needed,-z,relro -Wl,-O1
-LIBS          = $(SUBLIBS) -lcrypt -lxcb -lQt5Widgets -lQt5Gui -lQt5Core -lGL -lpthread 
+LIBS          = $(SUBLIBS) -lcrypt -lxcb -lpam -lpam_misc -lQt5Widgets -lQt5Gui -lQt5Core -lGL -lpthread 
 AR            = ar cqs
 RANLIB        = 
 QMAKE         = /usr/bin/qmake-qt5
@@ -49,12 +49,14 @@ SOURCES       = main.cpp \
 		window.cpp \
 		server.cpp \
 		session.cpp \
-		settings.cpp 
+		settings.cpp \
+		auth.cpp 
 OBJECTS       = main.o \
 		window.o \
 		server.o \
 		session.o \
-		settings.o
+		settings.o \
+		auth.o
 DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		/usr/lib/qt/mkspecs/common/shell-unix.conf \
 		/usr/lib/qt/mkspecs/common/unix.conf \
@@ -114,7 +116,8 @@ DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		window.cpp \
 		server.cpp \
 		session.cpp \
-		settings.cpp
+		settings.cpp \
+		auth.cpp
 QMAKE_TARGET  = marcdm
 DESTDIR       = #avoid trailing-slash linebreak
 TARGET        = marcdm
@@ -273,7 +276,7 @@ qmake_all: FORCE
 
 dist: 
 	@test -d .tmp/marcdm1.0.0 || mkdir -p .tmp/marcdm1.0.0
-	$(COPY_FILE) --parents $(DIST) .tmp/marcdm1.0.0/ && $(COPY_FILE) --parents main.cpp window.cpp server.cpp session.cpp settings.cpp .tmp/marcdm1.0.0/ && (cd `dirname .tmp/marcdm1.0.0` && $(TAR) marcdm1.0.0.tar marcdm1.0.0 && $(COMPRESS) marcdm1.0.0.tar) && $(MOVE) `dirname .tmp/marcdm1.0.0`/marcdm1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/marcdm1.0.0
+	$(COPY_FILE) --parents $(DIST) .tmp/marcdm1.0.0/ && $(COPY_FILE) --parents main.cpp window.cpp server.cpp session.cpp settings.cpp auth.cpp .tmp/marcdm1.0.0/ && (cd `dirname .tmp/marcdm1.0.0` && $(TAR) marcdm1.0.0.tar marcdm1.0.0 && $(COMPRESS) marcdm1.0.0.tar) && $(MOVE) `dirname .tmp/marcdm1.0.0`/marcdm1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/marcdm1.0.0
 
 
 clean:compiler_clean 
@@ -315,12 +318,14 @@ compiler_clean:
 main.o: main.cpp window.h \
 		session.h \
 		settings.h \
+		auth.h \
 		server.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 window.o: window.cpp window.h \
 		session.h \
-		settings.h
+		settings.h \
+		auth.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o window.o window.cpp
 
 server.o: server.cpp server.h
@@ -331,6 +336,9 @@ session.o: session.cpp session.h
 
 settings.o: settings.cpp settings.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o settings.o settings.cpp
+
+auth.o: auth.cpp auth.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o auth.o auth.cpp
 
 ####### Install
 

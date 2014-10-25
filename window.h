@@ -25,6 +25,7 @@
 #include <sys/wait.h>
 #include "session.h"
 #include "settings.h"
+#include "auth.h"
 
 char *pw_encrypt (const char *clear, const char *salt);
 
@@ -45,8 +46,9 @@ private:
 	Session* de;
 	Settings* settings;
 	QString defSession;
+	Auth* authenticator;
 
-	struct spwd* n;
+	//struct spwd* n;
 	struct passwd* pwd;
 	const char * session_path = "/usr/share/xsessions/";
 	DIR *dir;

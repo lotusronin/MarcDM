@@ -52,6 +52,7 @@ Window::Window(QWidget *parent) : QWidget(parent)
 
 	de = new Session();
 	settings->close();
+	authenticator = new Auth();
 }
 
 Window::~Window()
@@ -67,9 +68,9 @@ void Window::update()
 	** native support for hidpi, we should swap to
 	** that.
 	*/
-	int mult = 1;
+	double mult = 1;
 	if(hdpi) {
-		mult = 2;
+		mult = 1.5;
 	}
 	frame->setMinimumSize(frame->size()*mult);
 	ufield->setMinimumSize(ufield->size()*mult);
@@ -137,60 +138,25 @@ QString Window::getUserSession()
 void Window::onLogin()
 {
 	/* FIXME!
-	** Get Better User Authentication and add Password Auth. too.
+	** Get Better User Authentication.
 	*/
 	int auth = 0;
 	QString username = ufield->text();
 	QString pass = pfield->text();
-	if(!username.isEmpty())
-	{
-		n = getspnam(username.toStdString().c_str());
 
-		/*
-		**	User Authentication
-		*/
-		if(n != NULL)
-		{
-			//std::cout << n->sp_namp << "\n";
-			auth = 1;
-		}
-		else
-		{
-			endspent ();		/* stop access to shadow passwd file */
-			std::cout << "Error, no user: " << username.toStdString() << "\n";
-		}
+	/*
+	 * PAM authentication in progress!
+	 * Correctly identifies the user!!
+	 */
 
-		/*
-		**	Password Authentication
-		*/
-		if(!pass.isEmpty() && auth == 1 && n != NULL)
-		{
-			std::string spass = n->sp_pwdp;
-			std::string encpass = pw_encrypt(pass.toStdString().c_str(), spass.c_str());
-			if(encpass.compare(spass) == 0)
-			{
-				std::cout << "Username authenticated\n";
-				std::cout << "Password authenticated\n";
-				auth++;
-			}
-			else
-			{
-				std::cout << "Login failed!\n";
-			}
-		}
-		else
-		{
-			endspent ();		/* stop access to shadow passwd file */
-			if(pass.isEmpty())
-				std::cout << "Error, empty password.\n";
-		}
+	auth = authenticator->verifyUser(username,pass);
 
-		
-	}
-	else
-	{
-		std::cout << "Error, empty username.\n";
-	}
+	/*
+	 * Use legacy authentication (crypt)
+	 *
+	 */
+	//auth = authenticator->legacyAuth(username,pass);
+	
 	/*
 	** FIXME!
 	** Make sure all of this is correct.
@@ -199,19 +165,31 @@ void Window::onLogin()
 
 	if(auth == 2)
 	{
-
+		std::cout << "USER LOGGED IN!!!\n";
+		
 		std::string name = username.toStdString();
 		pwd = getpwnam(name.c_str());
 
 		std::string shell = pwd->pw_shell;
 		std::string home = pwd->pw_dir;
 		
+		QString sessionVal = sessions->currentText();
+		std::string desktop_session = sessionVal.toStdString();
+		if(desktop_session.compare("default") == 0) {
+			desktop_session = defSession.toStdString();
+			authenticator->startSession(defSession);
+		}
+		else {
+			authenticator->startSession(sessionVal);
+		}
+
 		QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
 		env.insert("USER",name.c_str());
 		env.insert("LOGNAME",name.c_str());
 		env.insert("SHELL",shell.c_str());
 		env.insert("HOME",home.c_str());
 		env.insert("XAUTHORITY",(home+"/.Xauthoirty").c_str());
+		env.insert("DESKTOP_SESSION",desktop_session.c_str());
 		de->setID(pwd->pw_uid, pwd->pw_gid);
 		de->setProcessEnvironment(env);
 		cleanup();
@@ -222,6 +200,7 @@ void Window::onLogin()
 		int status;
 		waitpid(pID, &status, 0);
 		this->show();
+		authenticator->closeSession();
 	}
 }
 
@@ -280,28 +259,6 @@ void Window::cleanup()
 {
 	endpwent ();		/* stop access to password file */
 	endspent ();		/* stop access to shadow passwd file */
-}
-
-char *pw_encrypt (const char *clear, const char *salt)
-{
-	static char cipher[128];
-	char *cp;
-
-	cp = crypt (clear, salt);
-	if (!cp) {
-		/*
-		 * Single Unix Spec: crypt() may return a null pointer,
-		 * and set errno to indicate an error.  The caller doesn't
-		 * expect us to return NULL, so...
-		 */
-		perror ("crypt");
-		exit (1);
-	}
-	if (strlen (cp) != 13)
-		return cp;	/* nonstandard crypt() in libc, better bail out */
-	strcpy (cipher, cp);
-
-	return cipher;
 }
 
 void Window::isHiDPI(bool hidpi) {
