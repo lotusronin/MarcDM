@@ -191,10 +191,12 @@ void Window::onLogin()
 		env.insert("XAUTHORITY",(home+"/.Xauthoirty").c_str());
 		env.insert("DESKTOP_SESSION",desktop_session.c_str());
 		de->setID(pwd->pw_uid, pwd->pw_gid);
+		de->setName(pwd->pw_name);
 		de->setProcessEnvironment(env);
-		cleanup();
+		//setsid();
 		startSession(readySession());
 		pid_t pID = de->processId();
+		cleanup();
 		this->hide();
 		// This code should be in an onLogout() method
 		int status;

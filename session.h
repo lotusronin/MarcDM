@@ -15,6 +15,7 @@ public:
 	Session();
 	~Session();
 	void setID(uid_t u, gid_t g);
+	void setName(char* n);
 
 protected:
 	void setupChildProcess();
@@ -22,6 +23,7 @@ protected:
 private:
 	gid_t gid;
 	uid_t uid;
+	char* name;
 };
 
 #endif //SESSION_H

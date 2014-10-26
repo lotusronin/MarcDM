@@ -4,6 +4,7 @@
 #include <pwd.h>
 #include <iostream>
 #include <string>
+#include <grp.h>
 
 Session::Session() : QProcess() {
 	
@@ -18,8 +19,12 @@ void Session::setID(uid_t u, gid_t g) {
 	gid = g;
 }
 
+void Session::setName(char* n) {
+	name = n;
+}
+
 void Session::setupChildProcess() {
-	if(setgid(gid) || setuid(uid))
+	if(setgid(gid) || initgroups(name,gid) || setuid(uid))
 	{	
 		std::cout << "Error switching g/uids\n";
 		exit(1);
