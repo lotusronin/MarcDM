@@ -13,6 +13,7 @@ class Auth {
 	int verifyUser(QString user, QString pass);
 	void closeSession();
 	void startSession(QString dSession);
+	void endPam();
 	int legacyAuth(QString user, QString pass);
 	char *pw_encrypt (const char *clear, const char *salt);
 private:

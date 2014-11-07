@@ -5,10 +5,12 @@
 #include <QProcessEnvironment>
 #include <QPixmap>
 #include <QImage>
+#include <unistd.h>
 
 Window::Window(QWidget *parent) : QWidget(parent)
 {
 	hdpi = false;
+	hasChild = false;
 	settings = new Settings();
 	settings->load();
 	bkg = new QLabel(this);
@@ -137,6 +139,10 @@ QString Window::getUserSession()
 
 void Window::onLogin()
 {
+	pid_t child = fork();
+	if(!child) {
+		return;
+	}
 	/* FIXME!
 	** Get Better User Authentication.
 	*/
@@ -152,7 +158,8 @@ void Window::onLogin()
 	auth = authenticator->verifyUser(username,pass);
 
 	/*
-	 * Use legacy authentication (crypt)
+	 * Use legacy authentication (crhild = fork();
+	if(!child) {ypt)
 	 *
 	 */
 	//auth = authenticator->legacyAuth(username,pass);
@@ -204,6 +211,9 @@ void Window::onLogin()
 		this->show();
 		authenticator->closeSession();
 	}
+	authenticator->endPam();
+	exit(0);
+
 }
 
 std::string Window::readySession()

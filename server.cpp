@@ -28,6 +28,9 @@ void Server::startX()
 	args << ":0" << "-background" << "none" << "-noreset" << "-verbose" << "3" << "-logfile" << "/dev/null" << "-seat" << "seat0" << "-nolisten" << "tcp" << "vt1" << "-novtswitch";
 	xproc->start("Xorg",args);
 	setenv("DISPLAY",":0",1);
+	setenv("XDG_SEAT","seat0",1);
+	setenv("XDG_VTNR","1",1);
+	setenv("XDG_SESSION_CLASS","greeter",1);
 }
 
 bool Server::pollServer() {
