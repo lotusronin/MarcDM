@@ -80,7 +80,6 @@ void Window::update()
 	button->setMinimumSize(button->size()*mult);
 	sessions->setMinimumSize(sessions->size()*mult);
 	powerops->setMinimumSize(powerops->size()*mult);
-	powermenu->setMinimumSize(powermenu->size()*mult);
 	/*
 	** End hidpi hackery
 	*/
@@ -157,12 +156,6 @@ void Window::onLogin()
 
 	auth = authenticator->verifyUser(username,pass);
 
-	/*
-	 * Use legacy authentication (crhild = fork();
-	if(!child) {ypt)
-	 *
-	 */
-	//auth = authenticator->legacyAuth(username,pass);
 	
 	/*
 	** FIXME!
@@ -243,7 +236,7 @@ void Window::startSession(std::string cmnd)
 	/*
 	**	Start X session here!
 	*/
-	QString program = QString::fromStdString(cmnd);
+	QString program = QString::fromStdString("/etc/marcdm/Xsession "+cmnd);
 	de->start(program);
 }
 
