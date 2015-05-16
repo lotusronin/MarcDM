@@ -46,6 +46,7 @@ private:
 	Session* de;
 	Settings* settings;
 	QString defSession;
+    QString defUser;
 	Auth* authenticator;
 
 	//struct spwd* n;

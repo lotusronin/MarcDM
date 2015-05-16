@@ -50,6 +50,10 @@ Window::Window(QWidget *parent) : QWidget(parent)
 	grid->addWidget(button, 1, 1);
 	grid->addWidget(powerops, 2, 1);
 	getSessions();
+    defUser = settings->getValue("default_user");
+    if(!defUser.isNull()) {
+        ufield->setText(defUser);
+    }
 	frame->setLayout(grid);
 
 	de = new Session();
@@ -100,7 +104,11 @@ void Window::update()
 		bkg->setPixmap(QPixmap::fromImage(QImage(bkgpath)).scaled(this->width(),this->height()));
 		frame->setAutoFillBackground(true);
 	}
-	ufield->setFocus();
+    if(!defUser.isNull()){
+        pfield->setFocus();
+    } else {
+	    ufield->setFocus();
+    }
 	settings->close();
 }
 
@@ -138,8 +146,8 @@ QString Window::getUserSession()
 
 void Window::onLogin()
 {
-	pid_t child = fork();
-	if(!child) {
+	pid_t pid = fork();
+	if(!pid) {
 		return;
 	}
 	/* FIXME!
