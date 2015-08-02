@@ -146,10 +146,6 @@ QString Window::getUserSession()
 
 void Window::onLogin()
 {
-	pid_t pid = fork();
-	if(!pid) {
-		return;
-	}
 	/* FIXME!
 	** Get Better User Authentication.
 	*/
@@ -198,6 +194,20 @@ void Window::onLogin()
 		env.insert("HOME",home.c_str());
 		env.insert("XAUTHORITY",(home+"/.Xauthoirty").c_str());
 		env.insert("DESKTOP_SESSION",desktop_session.c_str());
+        /*char** penv = authenticator->getEnv();
+        if(penv) {
+            std::cout << "Printing out environment vars from pam\n";
+            for(int i = 0; penv[i] != nullptr; i++) {
+                QString temp(penv[i]);
+                std::cout << temp.toStdString() << "\n";
+                int idx = temp.indexOf('=');
+                if(idx != -1) {
+                    env.insert(temp.left(idx), temp.mid(idx+1));
+                }
+                free(penv[i]);
+            }
+            free(penv);
+        }*/
 		de->setID(pwd->pw_uid, pwd->pw_gid);
 		de->setName(pwd->pw_name);
 		de->setProcessEnvironment(env);
@@ -211,10 +221,8 @@ void Window::onLogin()
 		waitpid(pID, &status, 0);
 		this->show();
 		authenticator->closeSession();
+	    authenticator->endPam(0);
 	}
-	authenticator->endPam();
-	exit(0);
-
 }
 
 std::string Window::readySession()

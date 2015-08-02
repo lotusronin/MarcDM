@@ -57,54 +57,51 @@ int Auth::verifyUser(QString user, QString pass) {
 		 * call to pam_end crashes progam if login is pressed twiced.
 		 */
 		std::cout << "Ending old pam session\n";
-		pam_end(pamh,0);
+        endPam(0);
+		//pam_end(pamh,0);
 	}
 	retcode = pam_start("marcdm", (char*)user.toStdString().c_str(), &conv, &pamh);
 	
 	if(retcode != PAM_SUCCESS) {
+        endPam(retcode);
 		std::cout << "Error Starting PAM!!!!\n";
-		pamh = NULL;
 		return -1;
 	}
 
-	if(retcode == PAM_SUCCESS) {
-		pam_misc_setenv(pamh,"XDG_SESSION_CLASS","greeter",0);
-		pam_misc_setenv(pamh,"XDG_SEAT","seat0",0);
-		/* This really is a user, check password*/ 
-		//std::cout << user.toStdString() << " Is Is Is " << pass.toStdString() << std::endl;
+	pam_misc_setenv(pamh,"XDG_SESSION_CLASS","greeter",0);
+	pam_misc_setenv(pamh,"XDG_SEAT","seat0",0);
+	/* This really is a user, check password*/ 
+	//std::cout << user.toStdString() << " Is Is Is " << pass.toStdString() << std::endl;
 		
-		/*
-		 * There was a strange bug where up_vals contained a pointer to the same string in memory.
-		 * I assume there is a bug with QString.toStdString(), perhaps All QStrings for a certain
-		 * application have a single spot where a std::String equivalent is placed when this method
-		 * is called. Fixed by using strdup().
-		 */
-		up_vals[0] = strdup(user.toStdString().c_str());
-		up_vals[1] = strdup(pass.toStdString().c_str());
-		/*std::cout << "up_vals[0] = " << up_vals[0] << "\n";
-		std::cout << "up_vals[1] = " << up_vals[1] << "\n";*/
-		retcode = pam_authenticate(pamh, 0);
-		up_vals[0] = 0;
-		up_vals[1] = 0;
-		if(retcode != PAM_SUCCESS) {
-			std::cout << "Error, could not authenticate user.\n";
-			fprintf(stderr,"\n%s\n",pam_strerror(pamh, retcode));
-			retval = 0;
-		}
-		else {
-			retcode = pam_acct_mgmt(pamh, retcode);
-			if(retcode != PAM_SUCCESS) {
-				std::cout << "Error, acct mgmt failed.\n";
-				fprintf(stderr,"\n%s\n",pam_strerror(pamh, retcode));
-			}
-			else {
-				retval = 2;
-				std::cout << "User " << user.toStdString() << " <HACKING> is a real user\n";
-			}
-		}
+	/*
+	 * There was a strange bug where up_vals contained a pointer to the same string in memory.
+	 * I assume there is a bug with QString.toStdString(), perhaps All QStrings for a certain
+	 * application have a single spot where a std::String equivalent is placed when this method
+	 * is called. Fixed by using strdup().
+	 */
+	up_vals[0] = strdup(user.toStdString().c_str());
+	up_vals[1] = strdup(pass.toStdString().c_str());
+	/*std::cout << "up_vals[0] = " << up_vals[0] << "\n";
+	std::cout << "up_vals[1] = " << up_vals[1] << "\n";*/
+	retcode = pam_authenticate(pamh, 0);
+	up_vals[0] = 0;
+	up_vals[1] = 0;
+	if(retcode != PAM_SUCCESS) {
+		std::cout << "Error, could not authenticate user.\n";
+		fprintf(stderr,"\n%s\n",pam_strerror(pamh, retcode));
+        endPam(retcode);
+		retval = 0;
+        return 0;
 	}
-	else {
-		std::cout << "Error, not a user!!!!\n";
+	
+    retcode = pam_acct_mgmt(pamh, retcode);
+	if(retcode != PAM_SUCCESS) {
+		std::cout << "Error, acct mgmt failed.\n";
+		fprintf(stderr,"\n%s\n",pam_strerror(pamh, retcode));
+        endPam(retcode);
+	} else {
+		retval = 2;
+		std::cout << "User " << user.toStdString() << " <HACKING> is a real user\n";
 	}
 
 	return retval;
@@ -116,6 +113,7 @@ void Auth::startSession(QString dSession) {
 		std::cout << "Starting Session: " << dSession.toStdString() << "\n";
 		ret = pam_open_session(pamh,0);
 		if(ret != PAM_SUCCESS) {
+            endPam(ret);
 			std::cout << "There was an error opening pam session!!!\n";
 		}
 	} else {
@@ -143,6 +141,14 @@ void Auth::endPam() {
 	pam_end(pamh, 0);
 }
 
+void Auth::endPam(int laststatus) {
+	pam_end(pamh, laststatus);
+    pamh = NULL;
+}
+
+char** Auth::getEnv() {
+    return pam_getenvlist(pamh);
+}
 
 int Auth::legacyAuth(QString user, QString pass) {
 	int auth = 0;
