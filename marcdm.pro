@@ -11,3 +11,5 @@ SOURCES += main.cpp window.cpp server.cpp session.cpp settings.cpp auth.cpp
 QT += widgets
 CONFIG += c++11
 LIBS += -lcrypt -lxcb -lpam -lpam_misc
+
+OBJECTS_DIR = build

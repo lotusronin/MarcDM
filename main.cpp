@@ -13,8 +13,6 @@
 #include <QFont>
 
 Server server;
-void startX();
-int Xisready();
 
 int main(int argc, char** argv)
 {

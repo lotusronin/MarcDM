@@ -16,8 +16,6 @@ class Auth {
 	void endPam();
 	void endPam(int laststatus);
     char** getEnv();
-	int legacyAuth(QString user, QString pass);
-	char *pw_encrypt (const char *clear, const char *salt);
 private:
 	pam_handle_t *pamh;
 	struct spwd* n;

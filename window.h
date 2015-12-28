@@ -27,7 +27,6 @@
 #include "settings.h"
 #include "auth.h"
 
-char *pw_encrypt (const char *clear, const char *salt);
 
 class Window : public QWidget
 {
