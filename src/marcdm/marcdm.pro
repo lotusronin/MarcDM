@@ -3,7 +3,7 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = "marcdm"
+TARGET = "../../marcdm"
 INCLUDEPATH += .
 
 # Input
