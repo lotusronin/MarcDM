@@ -17,6 +17,11 @@
 #include <dirent.h>
 #include <string>
 #include <pwd.h>
+
+//pam
+#include <security/pam_appl.h>
+#include <security/pam_misc.h>
+
 //Forking requirements
 #include <unistd.h>
 #include <sys/types.h>
@@ -47,6 +52,8 @@ private:
 	QString defSession;
     QString defUser;
 	Auth* authenticator;
+    pam_handle_t* pam_handle;
+	struct passwd* marcdm_pwd;
 
 	//struct spwd* n;
 	struct passwd* pwd;

@@ -31,6 +31,7 @@ void Server::startX()
 	setenv("XDG_SEAT","seat0",1);
 	setenv("XDG_VTNR","1",1);
 	setenv("XDG_SESSION_CLASS","greeter",1);
+	setenv("XDG_SESSION_TYPE","x11",1);
 }
 
 bool Server::pollServer() {

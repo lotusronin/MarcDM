@@ -6,6 +6,37 @@
 #include <QPixmap>
 #include <QImage>
 #include <unistd.h>
+#include <grp.h>
+
+static char* userpass[] = {"marcdm",NULL};
+
+static int conv_func(int num_msg, const struct pam_message **msg, struct pam_response **resp, void* data) {
+	int retval = PAM_SUCCESS;
+	int m;
+	*resp = (struct pam_response*) calloc(num_msg, sizeof(struct pam_response));
+	for(int i = 0; i<num_msg;i++) {
+		m = msg[i]->msg_style;
+		if(m == PAM_PROMPT_ECHO_ON) {
+			if(userpass[0] != NULL) {
+				(*resp)[i].resp = strdup(userpass[0]);
+			} else {
+				(*resp)[i].resp = strdup("");
+			}
+		} else if (m == PAM_PROMPT_ECHO_OFF) {
+			if(userpass[1] != NULL) {
+				(*resp)[i].resp = strdup(userpass[1]);
+			} else {
+				(*resp)[i].resp = NULL;
+			}
+		}
+	}
+	return retval;
+}
+
+static struct pam_conv conv = {
+	.conv=conv_func,
+	.appdata_ptr = userpass
+};
 
 Window::Window(QWidget *parent) : QWidget(parent)
 {
@@ -59,10 +90,18 @@ Window::Window(QWidget *parent) : QWidget(parent)
 	de = new Session();
 	settings->close();
 	authenticator = new Auth();
+    
+    struct passwd *marcdm_pwd = getpwnam("marcdm");
+    if(!setgid(marcdm_pwd->pw_gid) || !initgroups(marcdm_pwd->pw_name,marcdm_pwd->pw_gid) || !setuid(marcdm_pwd->pw_uid)) {
+        std::cerr << "Error setting group and user id for marcdm\n";
+    }
+    int retcode = pam_start("marcdm", "marcdm", &conv, &pam_handle);
+    //pam_misc_setenv(pamh,"XDG_SESSION_CLASS","greeter",0);
 }
 
 Window::~Window()
 {
+    pam_end(pam_handle, 0);
 	delete de;
 }
 
@@ -194,6 +233,7 @@ void Window::onLogin()
 		env.insert("HOME",home.c_str());
 		env.insert("XAUTHORITY",(home+"/.Xauthoirty").c_str());
 		env.insert("DESKTOP_SESSION",desktop_session.c_str());
+		env.insert("XDG_SESSION_CLASS","user");
         /*char** penv = authenticator->getEnv();
         if(penv) {
             std::cout << "Printing out environment vars from pam\n";

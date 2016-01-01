@@ -68,7 +68,7 @@ int Auth::verifyUser(QString user, QString pass) {
 		return -1;
 	}
 
-	pam_misc_setenv(pamh,"XDG_SESSION_CLASS","greeter",0);
+	pam_misc_setenv(pamh,"XDG_SESSION_CLASS","user",0);
 	pam_misc_setenv(pamh,"XDG_SEAT","seat0",0);
 	/* This really is a user, check password*/ 
 	//std::cout << user.toStdString() << " Is Is Is " << pass.toStdString() << std::endl;
