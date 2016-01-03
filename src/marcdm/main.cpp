@@ -27,16 +27,16 @@ int main(int argc, char** argv)
 	server.startX();
 	while(!server.pollServer()) {
 		usleep(5*1000);
-		//sleep(1);
 	}
 
 	QApplication app(argc, argv);
 	double ppi = app.primaryScreen()->physicalDotsPerInch();
-	std::cout << "Your ppi is " << ppi << "\n";
+	//std::cout << "Your ppi is " << ppi << "\n";
 	Window window;
 	if(ppi >= 200.00) {
 		/* HiDPI
 		** some hidpi font setting hack
+        ** Qt5 should be getting proper hidpi support on linux soon?
 		*/
 		window.isHiDPI(true);
 		QFont font = app.font();

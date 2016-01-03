@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
-TARGET = "../../marcdm"
+#TARGET = "../../marcdm"
 
-SUBDIRS = src/marcdm
-SUBDIRS = src/helper
+SUBDIRS = src/marcdm \ 
+        src/helper
 CONFIG += ordered
 

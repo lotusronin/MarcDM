@@ -160,12 +160,10 @@ void Window::getSessions()
 			QStringList list;
 			while((ent = readdir(dir)) != NULL)
 			{
-				/* FIXME!
-				** Make sure the executables exist.
-				*/
 				s = ent->d_name;
 				std::size_t found = s.find(".desktop");
-				if(found != std::string::npos)
+                std::string path(session_path);
+				if(found != std::string::npos && sessionExists(path+s))
 					list << s.substr(0,found).c_str();
 			}
 			list.sort();
@@ -324,4 +322,24 @@ void Window::cleanup()
 
 void Window::isHiDPI(bool hidpi) {
 	hdpi = hidpi;
+}
+
+bool sessionExists(std::string file) {
+	std::string line;
+	std::string cmnd;
+	std::ifstream f;
+	
+	f.open(file);
+	while(getline(f,line))
+	{
+	    if(line.compare(0,8,"TryExec=") == 0) {
+            cmnd = line.substr(8,line.length());
+            std::ifstream file_exists(cmnd.c_str());
+            std::string shell_cmd = "which "+cmnd;
+            return file_exists.is_open() || system(shell_cmd.c_str()) == 0;
+        }
+	}
+
+    //Assume true if we don't find TryExec field in the desktop file
+	return true;
 }

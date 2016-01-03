@@ -43,6 +43,8 @@ int SessionApp::setup()
 
 int SessionApp::auth() {
     //TODO Get password from original app
+    //Is there a better way?
+    //Does this create a vulnerability or is stdin properly changed because of QProcess?
     std::string s;
     std::cin >> s;
     //std::cout << s << "\n";

@@ -2,4 +2,5 @@
 *.swp
 qt dm
 /marcdm
+/marcdm-helper
 Makefile

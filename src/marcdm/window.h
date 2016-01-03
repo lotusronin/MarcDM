@@ -81,4 +81,6 @@ public:
 	void update();
 };
 
+bool sessionExists(std::string file);
+
 #endif //WINDOW_H
