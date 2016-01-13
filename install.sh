@@ -26,15 +26,15 @@ user_group_setup() {
 
 move_text_files() {
     # Xsession script
-    sudo cp -f ./scripts/Xsession /etc/marcdm/
+    sudo cp -f ./data/scripts/Xsession /etc/marcdm/
     # config file
     if [ ! -f /etc/marcdm/marcdm.conf ]; then
-        sudo cp ./marcdm.conf /etc/marcdm/
+        sudo cp ./data/marcdm.conf /etc/marcdm/
     fi
     # systemd service file
-    sudo cp -f ./marcdm.service /usr/lib/systemd/system/
+    sudo cp -f ./data/marcdm.service /usr/lib/systemd/system/
     # pam file
-    sudo cp -f ./pam/marcdm /etc/pam.d/marcdm
+    sudo cp -f ./data/pam/marcdm /etc/pam.d/marcdm
 }
 
 printf '%s\n' 'Installing marcdm'
