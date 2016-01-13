@@ -87,13 +87,15 @@ Window::Window(QWidget *parent) : QWidget(parent)
     }
 	frame->setLayout(grid);
 
-	de = new Session();
+	//de = new Session();
 	settings->close();
 	authenticator = new Auth();
     
     struct passwd *marcdm_pwd = getpwnam("marcdm");
     if(!setgid(marcdm_pwd->pw_gid) || !initgroups(marcdm_pwd->pw_name,marcdm_pwd->pw_gid) || !setuid(marcdm_pwd->pw_uid)) {
         std::cerr << "Error setting group and user id for marcdm\n";
+        std::cerr << "UHOH!!!\n";
+        std::cerr << "gid: "<< marcdm_pwd->pw_gid << " uid: " << marcdm_pwd->pw_uid << "\n";
     }
     int retcode = pam_start("marcdm", "marcdm", &conv, &pam_handle);
     //pam_misc_setenv(pamh,"XDG_SESSION_CLASS","greeter",0);
@@ -190,6 +192,38 @@ void Window::onLogin()
 	QString username = ufield->text();
 	QString pass = pfield->text();
 
+	
+    /*
+     * Start helper app
+     */
+    QString sessionVal = sessions->currentText();
+    std::string desktop_session = sessionVal.toStdString();
+    if(desktop_session.compare("default") == 0) {
+		desktop_session = defSession.toStdString();
+	}
+
+	//pwd = getpwnam(username.toStdString().c_str());
+    QProcess* proc = new QProcess();
+    proc->setProcessChannelMode(QProcess::ForwardedErrorChannel);
+	//de->setID(pwd->pw_uid, pwd->pw_gid);
+	QString program = QString::fromStdString("/usr/bin/marcdm-helper --user "+username.toStdString()+" --session "+desktop_session);
+	proc->start(program);
+    if(!proc->waitForStarted()) {
+        std::cerr << "process hasn't started!\n";
+    }
+    std::cerr << "Command being run is: " << program.toStdString() << "\n";
+    proc->write(pass.toUtf8());
+    proc->closeWriteChannel();
+    proc->waitForBytesWritten();
+	/*pid_t pID = proc->processId();*/
+	cleanup();
+	this->hide();
+    /*int status;
+    waitpid(pID, &status, 0);*/
+    std::cerr << "Finished: " << proc->waitForFinished(-1) << "\n";
+    this->show();
+
+#if 0
 	/*
 	 * PAM authentication in progress!
 	 * Correctly identifies the user!!
@@ -203,7 +237,6 @@ void Window::onLogin()
 	** Make sure all of this is correct.
 	**
 	*/
-
 	if(auth == 2)
 	{
 		std::cout << "USER LOGGED IN!!!\n";
@@ -261,6 +294,7 @@ void Window::onLogin()
 		authenticator->closeSession();
 	    authenticator->endPam(0);
 	}
+#endif
 }
 
 std::string Window::readySession()

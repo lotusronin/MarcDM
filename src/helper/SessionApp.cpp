@@ -37,19 +37,19 @@ int SessionApp::setup()
         std::cerr << "Error, no session given\n";
         return -1;
     }
+    
+    std::cerr << "user: " << m_user.toStdString() << "\n";
+    std::cerr << "session: " << m_session.toStdString() << "\n";
 
     return 0;
 }
 
 int SessionApp::auth() {
-    //TODO Get password from original app
-    //Is there a better way?
+    //TODO Is there a better way?
     //Does this create a vulnerability or is stdin properly changed because of QProcess?
     std::string s;
     std::cin >> s;
-    //std::cout << s << "\n";
-    //return 0;
-
+    m_pass = QString::fromStdString(s);
     return m_auth->verifyUser(m_user,m_pass);
 }
 
@@ -76,8 +76,12 @@ void SessionApp::start() {
 
     QString program = QString::fromStdString("/etc/marcdm/Xsession "+getSessionCmnd());
     usersession.start(program);
+    
+    int status;
+    pid_t pID = usersession.processId();
+    waitpid(pID, &status, 0);
+    
     usersession.waitForFinished();
-
 }
 
 std::string SessionApp::getSessionCmnd() {

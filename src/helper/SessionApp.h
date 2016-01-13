@@ -5,6 +5,7 @@
 #include <QtCore/QProcessEnvironment>
 #include <pwd.h>
 #include <string>
+#include <sys/wait.h>
 
 #include "Auth.h"
 
