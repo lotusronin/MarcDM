@@ -61,12 +61,9 @@ private:
 	DIR *dir;
 	struct dirent *ent;
 	bool hdpi;
-	bool hasChild;
 
 	void getSessions();
-	std::string readySession();
 	QString getUserSession();
-	void startSession(std::string session);
 	void suspend();
 	void restart();
 	void shutdown();

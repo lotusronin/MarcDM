@@ -41,7 +41,6 @@ static struct pam_conv conv = {
 Window::Window(QWidget *parent) : QWidget(parent)
 {
 	hdpi = false;
-	hasChild = false;
 	settings = new Settings();
 	settings->load();
 	bkg = new QLabel(this);
@@ -185,10 +184,6 @@ QString Window::getUserSession()
 
 void Window::onLogin()
 {
-	/* FIXME!
-	** Get Better User Authentication.
-	*/
-	int auth = 0;
 	QString username = ufield->text();
 	QString pass = pfield->text();
 
@@ -229,7 +224,7 @@ void Window::onLogin()
 	 * Correctly identifies the user!!
 	 */
 
-	auth = authenticator->verifyUser(username,pass);
+	int auth = authenticator->verifyUser(username,pass);
 
 	
 	/*
@@ -297,37 +292,6 @@ void Window::onLogin()
 #endif
 }
 
-std::string Window::readySession()
-{
-	std::string fpath;
-	if(sessions->currentText().toStdString().compare("default") == 0)
-	{
-		fpath = session_path + defSession.toStdString()+".desktop";
-	}
-	else {
-		fpath = session_path + sessions->currentText().toStdString() + ".desktop";
-	}
-	std::string line;
-	std::ifstream file;
-	
-	file.open(fpath);
-	while(line.compare(0,5,"Exec=") != 0)
-	{
-		getline(file,line);
-	}
-	std::string cmnd = line.substr(5,line.length());
-	return cmnd;
-}
-
-void Window::startSession(std::string cmnd)
-{
-	/*
-	**	Start X session here!
-	*/
-	QString program = QString::fromStdString("/etc/marcdm/Xsession "+cmnd);
-	de->start(program);
-}
-
 void Window::suspend()
 {
 	QProcess* p = new QProcess(this);
@@ -351,7 +315,6 @@ void Window::shutdown()
 void Window::cleanup()
 {
 	endpwent ();		/* stop access to password file */
-	endspent ();		/* stop access to shadow passwd file */
 }
 
 void Window::isHiDPI(bool hidpi) {
