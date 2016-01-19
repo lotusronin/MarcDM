@@ -92,7 +92,7 @@ Window::Window(QWidget *parent) : QWidget(parent)
 	authenticator = new Auth();
     
     struct passwd *marcdm_pwd = getpwnam("marcdm");
-    if(!setgid(marcdm_pwd->pw_gid) || !initgroups(marcdm_pwd->pw_name,marcdm_pwd->pw_gid) || !setuid(marcdm_pwd->pw_uid)) {
+    if(setgid(marcdm_pwd->pw_gid) || initgroups(marcdm_pwd->pw_name,marcdm_pwd->pw_gid) || setuid(marcdm_pwd->pw_uid)) {
         std::cerr << "Error setting group and user id for marcdm\n";
         std::cerr << "UHOH!!!\n";
         std::cerr << "gid: "<< marcdm_pwd->pw_gid << " uid: " << marcdm_pwd->pw_uid << "\n";
