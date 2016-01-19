@@ -84,6 +84,11 @@ void SessionApp::start() {
     usersession.waitForFinished();
 }
 
+void SessionApp::close() {
+    m_auth->closeSession();
+    m_auth->endPam(0);
+}
+
 std::string SessionApp::getSessionCmnd() {
     std::string fpath;
 	std::string line;

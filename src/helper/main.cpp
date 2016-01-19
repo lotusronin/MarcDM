@@ -23,6 +23,7 @@ int main(int argc, char** argv)
     }
 
     session.start();
+    session.close();
     
 	return 0;
 }

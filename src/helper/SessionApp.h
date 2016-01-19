@@ -18,6 +18,7 @@ class SessionApp {
         int setup();
         int auth();
         void start();
+        void close();
         std::string getSessionCmnd();
     private:
         QString m_session;
